@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Check-in/Time-Out</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-size: cover;
+      color: #fff;
+    }
+
+    header {
+      background: rgba(0, 0, 0, 0.85);
+      padding: 20px;
+      text-align: center;
+      border-bottom: 2px solid #ff4500;
+    }
+
+    header h1 {
+      color: #ff4500;
+      display: inline;
+    }
+
+    nav {
+      margin-top: 10px;
+    }
+
+    nav a {
+      color: #ccc;
+      margin: 0 15px;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    nav a:hover { color: #fff; }
+
+    .container {
+      background: rgba(0, 0, 0, 0.75);
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+
+    h2, h1 { margin-bottom: 20px; font-size: 30px; }
+
+    input {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 43%;
+      padding: 12px;
+      background-color: #ff4500;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px 3%;
+      transition: 0.3s ease;
+    }
+
+    button:hover { background-color: #e63e00; }
+
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background-color: #222;
+      font-size: 15px;
+    }
+
+    .late { color: red; font-weight: bold; }
+    .ontime { color: dodgerblue; font-weight: bold; }
+
+    .section-title {
+      margin-top: 30px;
+      font-size: 20px;
+      border-bottom: 1px solid #888;
+      padding-bottom: 5px;
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+      margin-top: 10px;
+    }
+
+    li {
+      margin-bottom: 8px;
+      background-color: #333;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    img {
+      width: 300px;
+      margin: 20px auto;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    a.button {
+      display: inline-block;
+      margin-top: 30px;
+      color: #ff4500;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    a.button:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      background-color: rgba(0, 0, 0, 0.85);
+      color: #aaa;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>CheckIn</h1>
+    <nav>
+      <a href="#" onclick="showHome(); return false;">Home</a>
+      <a href="#" onclick="showAbout(); return false;">About</a>
+      <a href="#">Log</a>
+    </nav>
+  </header>
+
+  <div class="container" id="main-content">
+    <h2>BOOK IN</h2>
+    <input id="name" placeholder="Your name" />
+    <input id="section" placeholder="Your section" />
+    <div>
+      <button onclick="checkIn()">Book In</button>
+      <button onclick="bookOut()">Book Out</button>
+    </div>
+    <div id="result"></div>
+
+    <div class="section-title">Late Users</div>
+    <ul id="lateList"></ul>
+  </div>
+
+  <footer>&copy; 2025 Special Edition | Built with 3 bottles of coke ❤️</footer>
+
+  <script>
+    function showHome() {
+      location.reload();
+    }
+
+    function showAbout() {
+      document.getElementById("main-content").innerHTML = `
+        <h1>About This Site</h1>
+        <img src="ncc.jpeg" alt="Visual" />
+        <p>This site includes all the features you need for booking in and checking out.</p>
+        <p>Or at least I tried to while I was half asleep and used the help of external resources plus having to modify the code and debug it on my own.</p>
+        <p>If it's past 8:30 then you'll be marked as late and it will be displayed at the bottom.</p>
+        <p>This is a live recording system thingy which helps to monitor naughty late users. They might not get happy endings. <strong>______</strong>.</p>
+        <a class="button" onclick="showHome()">← Back to Home</a>
+      `;
+    }
+
+    function checkIn() {
+      const name = document.getElementById('name').value.trim();
+      const sec = document.getElementById('section').value.trim();
+      if (!name || !sec) return alert("Please fill in all fields!");
+
+      const now = new Date();
+      const hour = now.getHours();
+      const min = now.getMinutes();
+      const timeStr = now.toLocaleTimeString();
+      const dateStr = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
+
+      let statusText = "";
+      let statusClass = "";
+
+      if (hour > 8 || (hour === 8 && min > 30)) {
+        statusText = "LATE";
+        statusClass = "late";
+        addToLateList(name, sec, "Check-In");
+      } else {
+        statusText = "ON TIME";
+        statusClass = "ontime";
+      }
+
+      document.getElementById('result').innerHTML =
+        `${name} (Section ${sec}) checked in at ${timeStr} on ${dateStr}<br>Status: <span class="${statusClass}">${statusText}</span>`;
+
+      clearInputs();
+    }
+
+    function bookOut() {
+      const name = document.getElementById('name').value.trim();
+      const sec = document.getElementById('section').value.trim();
+      if (!name || !sec) return alert("Please fill in all fields!");
+
+      const now = new Date();
+      const hour = now.getHours();
+      const min = now.getMinutes();
+      const timeStr = now.toLocaleTimeString();
+      const dateStr = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
+
+      let statusText = "";
+      let statusClass = "";
+
+      if (hour < 16 || (hour === 16 && min < 30)) {
+        statusText = "TOO EARLY TO BOOK OUT";
+        statusClass = "late";
+        addToLateList(name, sec, "Book-Out (Too Early)");
+      } else {
+        statusText = "BOOKED OUT";
+        statusClass = "ontime";
+      }
+
+      document.getElementById('result').innerHTML =
+        `${name} (Section ${sec}) booked out at ${timeStr} on ${dateStr}<br>Status: <span class="${statusClass}">${statusText}</span>`;
+
+      clearInputs();
+    }
+
+    function addToLateList(name, section, type) {
+      const li = document.createElement("li");
+      li.textContent = `${name} (Section ${section}) - ${type}`;
+      document.getElementById('lateList').appendChild(li);
+    }
+
+    function clearInputs() {
+      document.getElementById('name').value = '';
+      document.getElementById('section').value = '';
+    }
+  </script>
+
+</body>
+</html>
